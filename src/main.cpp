@@ -1,27 +1,27 @@
 #include <Arduino.h>
-#include <JC_Button.h>
+#include <Button2.h>
 
 #define PIN_LED LED_BUILTIN
-#define PIN_KEY_1 (4)
+#define PIN_KEY (4)
+#define PIN_ROTARY_LEFT (18)
+#define PIN_ROTARY_RIGHT (19)
 
-Button key1(PIN_KEY_1);
+Button2 key;
+
+void click(Button2 &btn)
+{
+  Serial.println("click");
+}
 
 void setup()
 {
   Serial.begin(9600);
   pinMode(PIN_LED, OUTPUT);
-  key1.begin();
+  key.begin(PIN_KEY);
+  key.setClickHandler(click);
 }
 
 void loop()
 {
-  key1.read();
-  if (key1.wasPressed())
-  {
-    digitalWrite(PIN_LED, HIGH);
-  }
-  if (key1.wasReleased())
-  {
-    digitalWrite(PIN_LED, LOW);
-  }
+  key.loop();
 }
