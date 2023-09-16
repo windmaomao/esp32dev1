@@ -30,4 +30,6 @@ void setup()
 void loop()
 {
   key.loop();
+  Serial.println(touchRead(13));
+  delay(200);
 }
