@@ -1,16 +1,17 @@
 #include <Arduino.h>
 
+#define PIN_LED LED_BUILTIN
+#define PIN_BUTTON 4
+
 void setup()
 {
-  // initialize digital pin LED_BUILTIN as an output.
-  pinMode(LED_BUILTIN, OUTPUT);
+  pinMode(PIN_LED, OUTPUT);
+  pinMode(PIN_BUTTON, INPUT_PULLUP);
+  Serial.begin(9600);
 }
 
-// the loop function runs over and over again forever
 void loop()
 {
-  digitalWrite(LED_BUILTIN, HIGH); // turn the LED on (HIGH is the voltage level)
-  delay(1000);                     // wait for a second
-  digitalWrite(LED_BUILTIN, LOW);  // turn the LED off by making the voltage LOW
-  delay(1000);                     // wait for a second
+  digitalWrite(PIN_LED, LOW);
+  Serial.println(digitalRead(PIN_BUTTON));
 }
