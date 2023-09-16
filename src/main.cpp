@@ -8,9 +8,14 @@
 
 Button2 key;
 
-void click(Button2 &btn)
+void onPress(Button2 &btn)
 {
-  Serial.println("click");
+  digitalWrite(PIN_LED, HIGH);
+}
+
+void onRelease(Button2 &btn)
+{
+  digitalWrite(PIN_LED, LOW);
 }
 
 void setup()
@@ -18,7 +23,8 @@ void setup()
   Serial.begin(9600);
   pinMode(PIN_LED, OUTPUT);
   key.begin(PIN_KEY);
-  key.setClickHandler(click);
+  key.setPressedHandler(onPress);
+  key.setReleasedHandler(onRelease);
 }
 
 void loop()
