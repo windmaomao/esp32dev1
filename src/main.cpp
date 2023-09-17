@@ -7,15 +7,18 @@
 #define PIN_ROTARY_RIGHT (19)
 
 Button2 key;
+volatile int count = 0;
 
-void onPress(Button2 &btn)
+IRAM_ATTR void onPress(Button2 &btn)
 {
   digitalWrite(PIN_LED, HIGH);
 }
 
-void onRelease(Button2 &btn)
+IRAM_ATTR void onRelease(Button2 &btn)
 {
   digitalWrite(PIN_LED, LOW);
+  count++;
+  Serial.println(count);
 }
 
 void setup()
@@ -30,6 +33,5 @@ void setup()
 void loop()
 {
   key.loop();
-  Serial.println(touchRead(13));
-  delay(200);
+  delay(50);
 }
