@@ -23,6 +23,7 @@ IRAM_ATTR void onRelease(Button2 &btn)
   digitalWrite(PIN_LED, LOW);
   count++;
   Serial.println(count);
+  bleMouse.click(MOUSE_LEFT);
 }
 
 void IRAM_ATTR readEncoderISR()
@@ -45,7 +46,7 @@ void setup()
   rotary.begin();
   rotary.setup(readEncoderISR);
   rotary.areEncoderPinsPulldownforEsp32 = false;
-  rotary.setAcceleration(5);
+  rotary.setAcceleration(0);
 
   bleMouse.begin();
 }
@@ -60,7 +61,7 @@ void loop()
     if (res != 0)
     {
       Serial.println(res);
-      bleMouse.move(0, 0, -res);
+      bleMouse.move(0, 0, res);
     }
   }
 }
