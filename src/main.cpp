@@ -7,11 +7,23 @@
 #define PIN_KEY (4)
 #define PIN_ROTARY_LEFT (18)
 #define PIN_ROTARY_RIGHT (19)
+#define TIME_INACTIVITY (1000 * 60)
 
 Button2 key;
 volatile int count = 0;
 AiEsp32RotaryEncoder rotary = AiEsp32RotaryEncoder(PIN_ROTARY_LEFT, PIN_ROTARY_RIGHT);
 BleMouse bleMouse;
+unsigned long lastActivityTime = 0;
+
+void keepActive()
+{
+  lastActivityTime = millis();
+}
+
+bool isIdle()
+{
+  return millis() - lastActivityTime >= TIME_INACTIVITY;
+}
 
 IRAM_ATTR void onPress(Button2 &btn)
 {
@@ -40,6 +52,7 @@ void setup()
   key.begin(PIN_KEY);
   key.setPressedHandler(onPress);
   key.setReleasedHandler(onRelease);
+  attachInterrupt(digitalPinToInterrupt(PIN_KEY), keepActive, CHANGE);
 
   pinMode(PIN_ROTARY_LEFT, INPUT_PULLUP);
   pinMode(PIN_ROTARY_RIGHT, INPUT_PULLUP);
@@ -61,12 +74,20 @@ void loop()
     return;
   }
 
+  if (isIdle())
+  {
+    Serial.println("Device is idle. Disconnecting...");
+    bleMouse.end();
+    delay(5000);
+    return;
+  }
+
   key.loop();
 
   int res = rotary.encoderChanged();
   if (res != 0)
   {
-    Serial.println(res);
+    keepActive();
     bleMouse.move(0, 0, res);
   }
 }
