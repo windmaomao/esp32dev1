@@ -53,15 +53,20 @@ void setup()
 
 void loop()
 {
+  if (!bleMouse.isConnected())
+  {
+    Serial.println("Bluetooth disconnected. Attempting to reconnect...");
+    bleMouse.begin();
+    delay(5000);
+    return;
+  }
+
   key.loop();
 
-  if (bleMouse.isConnected())
+  int res = rotary.encoderChanged();
+  if (res != 0)
   {
-    int res = rotary.encoderChanged();
-    if (res != 0)
-    {
-      Serial.println(res);
-      bleMouse.move(0, 0, res);
-    }
+    Serial.println(res);
+    bleMouse.move(0, 0, res);
   }
 }
