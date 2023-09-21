@@ -70,8 +70,7 @@ void loop()
   if (!bleMouse.isConnected())
   {
     Serial.println("Bluetooth disconnected.");
-    bleMouse.begin();
-    delay(5000);
+    // bleMouse.begin(); delay(5000);
     return;
   }
 
@@ -79,6 +78,7 @@ void loop()
   {
     Serial.println("Device is idle. Keeping it alive...");
     keepActive();
+    // delay(1000);
     return;
   }
 
