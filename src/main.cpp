@@ -19,11 +19,14 @@ AiEsp32RotaryEncoder rotary = AiEsp32RotaryEncoder(PIN_ROTARY_LEFT, PIN_ROTARY_R
 BleMouse bleMouse;
 unsigned long lastActivityTime = 0;
 RGBLed rgbLed(PIN_RED, PIN_GREEN, PIN_BLUE, RGBLed::COMMON_CATHODE);
+hw_timer_t *timer = NULL;
+volatile bool flashing = false;
 
 void keepActive()
 {
   lastActivityTime = millis();
   bleMouse.move(0, 0, 0, 1);
+  rgbLed.fadeOut(RGBLed::BLUE, 100, 100);
 }
 
 bool isIdle()
@@ -49,6 +52,11 @@ void IRAM_ATTR readEncoderISR()
   rotary.readEncoder_ISR();
 }
 
+void IRAM_ATTR timerISR()
+{
+  flashing = true;
+}
+
 void setup()
 {
   Serial.begin(9600);
@@ -69,6 +77,11 @@ void setup()
   bleMouse.begin();
 
   rgbLed.off();
+
+  timer = timerBegin(2, 80, true);
+  timerAttachInterrupt(timer, &timerISR, true);
+  timerAlarmWrite(timer, 1000000, true);
+  timerAlarmEnable(timer);
 }
 
 void loop()
@@ -84,10 +97,15 @@ void loop()
 
   if (isIdle())
   {
-    rgbLed.flash(RGBLed::GREEN, 100, 100);
     Serial.println("Device is idle. Keeping it alive...");
     keepActive();
     return;
+  }
+
+  if (flashing)
+  {
+    rgbLed.fadeOut(RGBLed::GREEN, 100, 100);
+    flashing = false;
   }
 
   key.loop();
