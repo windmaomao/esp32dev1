@@ -53,7 +53,6 @@ void setup()
   key.begin(PIN_KEY);
   key.setPressedHandler(onPress);
   key.setReleasedHandler(onRelease);
-  // attachInterrupt(digitalPinToInterrupt(PIN_KEY), keepActive, CHANGE);
 
   pinMode(PIN_ROTARY_LEFT, INPUT_PULLUP);
   pinMode(PIN_ROTARY_RIGHT, INPUT_PULLUP);
@@ -69,8 +68,9 @@ void loop()
 {
   if (!bleMouse.isConnected())
   {
-    Serial.println("Bluetooth disconnected.");
-    // bleMouse.begin(); delay(5000);
+    Serial.print(".");
+    // Note: no delay can be used here, otherwise
+    // the device will not be able to connect.
     return;
   }
 
@@ -78,7 +78,6 @@ void loop()
   {
     Serial.println("Device is idle. Keeping it alive...");
     keepActive();
-    // delay(1000);
     return;
   }
 
