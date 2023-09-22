@@ -14,7 +14,6 @@
 #define PIN_BLUE (25)
 #define PIN_KEY2 (23)
 
-Button2 clickButton;
 AiEsp32RotaryEncoder rotary = AiEsp32RotaryEncoder(PIN_ROTARY_LEFT, PIN_ROTARY_RIGHT);
 BleMouse bleMouse;
 unsigned long lastActivityTime = 0;
@@ -23,6 +22,7 @@ hw_timer_t *timer = NULL;
 Button2 scrollToggler;
 volatile bool scrollOn = false;
 volatile bool scrollForward = true;
+Button2 focusButton;
 
 void keepActive()
 {
@@ -52,15 +52,17 @@ void timerISR()
   }
 }
 
+void toggleScroll(bool forward)
+{
+  scrollOn = !scrollOn;
+  scrollForward = forward;
+}
+
 void setup()
 {
   Serial.begin(9600);
 
   pinMode(PIN_LED, OUTPUT);
-
-  clickButton.begin(PIN_KEY);
-  clickButton.setClickHandler([](Button2 &btn)
-                              { bleMouse.click(MOUSE_LEFT); });
 
   pinMode(PIN_ROTARY_LEFT, INPUT_PULLUP);
   pinMode(PIN_ROTARY_RIGHT, INPUT_PULLUP);
@@ -75,14 +77,18 @@ void setup()
 
   timer = timerBegin(2, 80, true);
   timerAttachInterrupt(timer, &timerISR, true);
-  timerAlarmWrite(timer, 1000000, true);
+  timerAlarmWrite(timer, 500000, true);
   timerAlarmEnable(timer);
 
-  scrollToggler.begin(PIN_KEY2);
+  scrollToggler.begin(PIN_KEY);
   scrollToggler.setClickHandler([](Button2 &btn)
-                                { scrollForward=true; scrollOn = !scrollOn; });
+                                { toggleScroll(true); });
   scrollToggler.setDoubleClickHandler([](Button2 &btn)
-                                      { scrollForward=false; scrollOn = !scrollOn; });
+                                      { toggleScroll(false); });
+
+  focusButton.begin(PIN_KEY2);
+  focusButton.setClickHandler([](Button2 &btn)
+                              { bleMouse.click(MOUSE_LEFT); });
 }
 
 void loop()
@@ -103,8 +109,8 @@ void loop()
     return;
   }
 
-  clickButton.loop();
   scrollToggler.loop();
+  focusButton.loop();
 
   int res = rotary.encoderChanged();
   if (res != 0)
