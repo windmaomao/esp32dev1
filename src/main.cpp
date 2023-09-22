@@ -2,18 +2,23 @@
 #include <Arduino.h>
 #include <Button2.h>
 #include <BleMouse.h>
+#include <RGBLed.h>
 
 #define PIN_LED LED_BUILTIN
 #define PIN_KEY (4)
 #define PIN_ROTARY_LEFT (18)
 #define PIN_ROTARY_RIGHT (19)
 #define TIME_INACTIVITY (1000 * 60 * 5)
+#define PIN_RED (26)
+#define PIN_GREEN (27)
+#define PIN_BLUE (25)
 
 Button2 key;
 volatile int count = 0;
 AiEsp32RotaryEncoder rotary = AiEsp32RotaryEncoder(PIN_ROTARY_LEFT, PIN_ROTARY_RIGHT);
 BleMouse bleMouse;
 unsigned long lastActivityTime = 0;
+RGBLed rgbLed(PIN_RED, PIN_GREEN, PIN_BLUE, RGBLed::COMMON_CATHODE);
 
 void keepActive()
 {
@@ -62,12 +67,15 @@ void setup()
   rotary.setAcceleration(0);
 
   bleMouse.begin();
+
+  rgbLed.off();
 }
 
 void loop()
 {
   if (!bleMouse.isConnected())
   {
+    rgbLed.fadeOut(RGBLed::RED, 5, 100);
     Serial.print(".");
     // Note: no delay can be used here, otherwise
     // the device will not be able to connect.
@@ -76,6 +84,7 @@ void loop()
 
   if (isIdle())
   {
+    rgbLed.flash(RGBLed::GREEN, 100, 100);
     Serial.println("Device is idle. Keeping it alive...");
     keepActive();
     return;
