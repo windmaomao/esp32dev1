@@ -22,14 +22,12 @@ volatile bool scrollOn = false;
 volatile bool scrollForward = true;
 Button2 focusButton;
 
-void IRAM_ATTR readEncoderISR()
-{
-  rotary.readEncoder_ISR();
-}
-
 void timerISR()
 {
+  // keep from idle
   bleMouse.move(1, 0);
+
+  // enable scroll
   if (scrollOn)
   {
     if (scrollForward)
@@ -54,7 +52,8 @@ void setup()
   pinMode(PIN_ROTARY_LEFT, INPUT_PULLUP);
   pinMode(PIN_ROTARY_RIGHT, INPUT_PULLUP);
   rotary.begin();
-  rotary.setup(readEncoderISR);
+  rotary.setup([]()
+               { rotary.readEncoder_ISR(); });
   rotary.areEncoderPinsPulldownforEsp32 = false;
   rotary.setAcceleration(0);
 
@@ -64,7 +63,7 @@ void setup()
 
   timer = timerBegin(2, 80, true);
   timerAttachInterrupt(timer, &timerISR, true);
-  timerAlarmWrite(timer, 500000, true);
+  timerAlarmWrite(timer, 300000, true);
   timerAlarmEnable(timer);
 
   scrollToggler.begin(PIN_KEY);
