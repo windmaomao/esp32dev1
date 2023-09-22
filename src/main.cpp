@@ -12,15 +12,16 @@
 #define PIN_RED (26)
 #define PIN_GREEN (27)
 #define PIN_BLUE (25)
+#define PIN_KEY2 (23)
 
-Button2 key;
-volatile int count = 0;
+Button2 clickButton;
 AiEsp32RotaryEncoder rotary = AiEsp32RotaryEncoder(PIN_ROTARY_LEFT, PIN_ROTARY_RIGHT);
 BleMouse bleMouse;
 unsigned long lastActivityTime = 0;
 RGBLed rgbLed(PIN_RED, PIN_GREEN, PIN_BLUE, RGBLed::COMMON_CATHODE);
 hw_timer_t *timer = NULL;
-volatile bool flashing = false;
+Button2 scrollToggler;
+volatile bool scrollOn = false;
 
 void keepActive()
 {
@@ -34,27 +35,17 @@ bool isIdle()
   return millis() - lastActivityTime >= TIME_INACTIVITY;
 }
 
-IRAM_ATTR void onPress(Button2 &btn)
-{
-  digitalWrite(PIN_LED, HIGH);
-}
-
-IRAM_ATTR void onRelease(Button2 &btn)
-{
-  digitalWrite(PIN_LED, LOW);
-  count++;
-  Serial.println(count);
-  bleMouse.click(MOUSE_LEFT);
-}
-
 void IRAM_ATTR readEncoderISR()
 {
   rotary.readEncoder_ISR();
 }
 
-void IRAM_ATTR timerISR()
+void timerISR()
 {
-  flashing = true;
+  if (scrollOn)
+  {
+    bleMouse.move(0, 0, 1);
+  }
 }
 
 void setup()
@@ -63,9 +54,9 @@ void setup()
 
   pinMode(PIN_LED, OUTPUT);
 
-  key.begin(PIN_KEY);
-  key.setPressedHandler(onPress);
-  key.setReleasedHandler(onRelease);
+  clickButton.begin(PIN_KEY);
+  clickButton.setClickHandler([](Button2 &btn)
+                              { bleMouse.click(MOUSE_LEFT); });
 
   pinMode(PIN_ROTARY_LEFT, INPUT_PULLUP);
   pinMode(PIN_ROTARY_RIGHT, INPUT_PULLUP);
@@ -82,6 +73,10 @@ void setup()
   timerAttachInterrupt(timer, &timerISR, true);
   timerAlarmWrite(timer, 1000000, true);
   timerAlarmEnable(timer);
+
+  scrollToggler.begin(PIN_KEY2);
+  scrollToggler.setClickHandler([](Button2 &btn)
+                                { scrollOn = !scrollOn; });
 }
 
 void loop()
@@ -102,13 +97,8 @@ void loop()
     return;
   }
 
-  if (flashing)
-  {
-    rgbLed.fadeOut(RGBLed::GREEN, 100, 100);
-    flashing = false;
-  }
-
-  key.loop();
+  clickButton.loop();
+  scrollToggler.loop();
 
   int res = rotary.encoderChanged();
   if (res != 0)
