@@ -22,6 +22,7 @@ RGBLed rgbLed(PIN_RED, PIN_GREEN, PIN_BLUE, RGBLed::COMMON_CATHODE);
 hw_timer_t *timer = NULL;
 Button2 scrollToggler;
 volatile bool scrollOn = false;
+volatile bool scrollForward = true;
 
 void keepActive()
 {
@@ -44,7 +45,10 @@ void timerISR()
 {
   if (scrollOn)
   {
-    bleMouse.move(0, 0, 1);
+    if (scrollForward)
+      bleMouse.move(0, 0, 1);
+    else
+      bleMouse.move(0, 0, -1);
   }
 }
 
@@ -76,7 +80,9 @@ void setup()
 
   scrollToggler.begin(PIN_KEY2);
   scrollToggler.setClickHandler([](Button2 &btn)
-                                { scrollOn = !scrollOn; });
+                                { scrollForward=true; scrollOn = !scrollOn; });
+  scrollToggler.setDoubleClickHandler([](Button2 &btn)
+                                      { scrollForward=false; scrollOn = !scrollOn; });
 }
 
 void loop()
