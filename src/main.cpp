@@ -3,6 +3,7 @@
 #include <Button2.h>
 #include <BleMouse.h>
 #include <RGBLed.h>
+#include <arduino-timer.h>
 
 #define PIN_LED LED_BUILTIN
 #define PIN_KEY (4)
@@ -21,6 +22,7 @@ Button2 scrollToggler;
 volatile bool scrollOn = false;
 volatile bool scrollForward = true;
 Button2 focusButton;
+Timer<10> timer2;
 
 void timerISR()
 {
@@ -41,6 +43,12 @@ void toggleScroll(bool forward)
 {
   scrollOn = !scrollOn;
   scrollForward = forward;
+}
+
+bool onTimer(void *argument)
+{
+  Serial.println("timer");
+  return true;
 }
 
 void setup()
@@ -75,10 +83,14 @@ void setup()
   focusButton.begin(PIN_KEY2);
   focusButton.setClickHandler([](Button2 &btn)
                               { bleMouse.click(MOUSE_LEFT); });
+
+  timer2.every(1000, &onTimer);
 }
 
 void loop()
 {
+  timer2.tick();
+
   if (!bleMouse.isConnected())
   {
     rgbLed.fadeOut(RGBLed::RED, 5, 100);
