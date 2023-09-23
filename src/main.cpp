@@ -24,7 +24,7 @@ volatile bool scrollForward = true;
 Button2 focusButton;
 Timer<10> timer2;
 
-void timerISR()
+bool onTimer(void *arguments)
 {
   // keep from idle
   bleMouse.move(1, 0);
@@ -37,18 +37,14 @@ void timerISR()
     else
       bleMouse.move(0, 0, -1);
   }
+
+  return true;
 }
 
 void toggleScroll(bool forward)
 {
   scrollOn = !scrollOn;
   scrollForward = forward;
-}
-
-bool onTimer(void *argument)
-{
-  Serial.println("timer");
-  return true;
 }
 
 void setup()
@@ -69,10 +65,10 @@ void setup()
 
   rgbLed.off();
 
-  timer = timerBegin(2, 80, true);
-  timerAttachInterrupt(timer, &timerISR, true);
-  timerAlarmWrite(timer, 300000, true);
-  timerAlarmEnable(timer);
+  // timer = timerBegin(2, 80, true);
+  // timerAttachInterrupt(timer, &timerISR, true);
+  // timerAlarmWrite(timer, 300000, true);
+  // timerAlarmEnable(timer);
 
   scrollToggler.begin(PIN_KEY);
   scrollToggler.setClickHandler([](Button2 &btn)
@@ -89,14 +85,13 @@ void setup()
 
 void loop()
 {
-  timer2.tick();
-
   if (!bleMouse.isConnected())
   {
     rgbLed.fadeOut(RGBLed::RED, 5, 100);
     return;
   }
 
+  timer2.tick();
   scrollToggler.loop();
   focusButton.loop();
 
