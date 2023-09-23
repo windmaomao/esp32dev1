@@ -21,6 +21,7 @@ Button2 scrollToggler;
 volatile bool scrollOn = false;
 Button2 focusButton;
 Timer<10> timer;
+bool bluetoothOn = true;
 
 bool onScrolling(void *arguments)
 {
@@ -33,13 +34,34 @@ void onScrollToggle(Button2 &btn)
   scrollOn = !scrollOn;
   if (scrollOn)
   {
-    rgbLed.flash(RGBLed::GREEN, 100);
+    rgbLed.flash(RGBLed::GREEN, 20);
     timer.every(500, &onScrolling);
   }
   else
   {
-    rgbLed.flash(RGBLed::RED, 100);
+    rgbLed.flash(RGBLed::RED, 20);
   }
+}
+
+bool onDisconnecting(void *arguments)
+{
+  rgbLed.flash(RGBLed::YELLOW, 20, 50);
+  return !bluetoothOn;
+}
+
+bool checkBleStatus()
+{
+  bool on = bleMouse.isConnected();
+  if (on == bluetoothOn)
+    return on;
+
+  bluetoothOn = on;
+  if (!bluetoothOn)
+  {
+    timer.every(1000, &onDisconnecting);
+  }
+
+  return bluetoothOn;
 }
 
 void setup()
@@ -70,13 +92,10 @@ void setup()
 
 void loop()
 {
-  if (!bleMouse.isConnected())
-  {
-    rgbLed.fadeOut(RGBLed::RED, 5, 100);
-    return;
-  }
-
   timer.tick();
+  if (!checkBleStatus())
+    return;
+
   scrollToggler.loop();
   focusButton.loop();
 
