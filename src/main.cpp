@@ -7,12 +7,12 @@
 
 #define PIN_LED LED_BUILTIN
 #define PIN_KEY (4)
-#define PIN_ROTARY_LEFT (18)
-#define PIN_ROTARY_RIGHT (19)
+#define PIN_ROTARY_LEFT (22)
+#define PIN_ROTARY_RIGHT (23)
 #define PIN_RED (26)
 #define PIN_GREEN (27)
 #define PIN_BLUE (25)
-#define PIN_KEY2 (23)
+#define PIN_KEY2 (21)
 
 AiEsp32RotaryEncoder rotary = AiEsp32RotaryEncoder(PIN_ROTARY_LEFT, PIN_ROTARY_RIGHT);
 BleMouse bleMouse;
