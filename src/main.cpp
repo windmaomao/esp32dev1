@@ -14,6 +14,10 @@
 #define PIN_BLUE (25)
 #define PIN_KEY2 (21)
 
+#define uS_TO_S_FACTOR 1000000
+#define mS_TO_S_FACTOR 1000
+#define TIME_TO_SLEEP 10
+
 AiEsp32RotaryEncoder rotary = AiEsp32RotaryEncoder(PIN_ROTARY_LEFT, PIN_ROTARY_RIGHT);
 BleMouse bleMouse;
 RGBLed rgbLed(PIN_RED, PIN_GREEN, PIN_BLUE, RGBLed::COMMON_CATHODE);
@@ -22,6 +26,7 @@ volatile bool scrollOn = false;
 Button2 focusButton;
 Timer<10> timer;
 bool bluetoothOn = true;
+unsigned long lastActivity = 0;
 
 bool onScrolling(void *arguments)
 {
@@ -88,6 +93,8 @@ void setup()
   focusButton.begin(PIN_KEY2);
   focusButton.setClickHandler([](Button2 &btn)
                               { bleMouse.click(MOUSE_LEFT); });
+
+  lastActivity = millis();
 }
 
 void loop()
@@ -96,6 +103,16 @@ void loop()
   if (!checkBleStatus())
     return;
 
+  if (millis() - lastActivity > TIME_TO_SLEEP * mS_TO_S_FACTOR)
+  {
+    Serial.println("Idle and sleep");
+    rgbLed.flash(RGBLed::RED, 20);
+    esp_sleep_enable_timer_wakeup(TIME_TO_SLEEP * uS_TO_S_FACTOR);
+    delay(1000);
+    esp_deep_sleep_start();
+    return;
+  }
+
   scrollToggler.loop();
   focusButton.loop();
 
@@ -103,5 +120,6 @@ void loop()
   if (res != 0)
   {
     bleMouse.move(0, 0, res);
+    lastActivity = millis();
   }
 }
