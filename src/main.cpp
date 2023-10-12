@@ -69,9 +69,15 @@ bool checkBleStatus()
   return bluetoothOn;
 }
 
+void callback()
+{
+  // placeholder callback function
+}
+
 void setup()
 {
   Serial.begin(9600);
+  Serial.println("Start");
 
   pinMode(PIN_LED, OUTPUT);
 
@@ -107,7 +113,9 @@ void loop()
   {
     Serial.println("Idle and sleep");
     rgbLed.flash(RGBLed::RED, 20);
-    esp_sleep_enable_timer_wakeup(TIME_TO_SLEEP * uS_TO_S_FACTOR);
+    // esp_sleep_enable_timer_wakeup(TIME_TO_SLEEP * uS_TO_S_FACTOR);
+    touchAttachInterrupt(T3, callback, 80);
+    esp_sleep_enable_touchpad_wakeup();
     delay(1000);
     esp_deep_sleep_start();
     return;
