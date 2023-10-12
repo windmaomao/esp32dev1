@@ -17,6 +17,7 @@
 #define uS_TO_S_FACTOR 1000000
 #define mS_TO_S_FACTOR 1000
 #define TIME_TO_SLEEP 10
+#define TOUCH_THRESHOLD 80
 
 AiEsp32RotaryEncoder rotary = AiEsp32RotaryEncoder(PIN_ROTARY_LEFT, PIN_ROTARY_RIGHT);
 BleMouse bleMouse;
@@ -114,7 +115,7 @@ void loop()
     Serial.println("Idle and sleep");
     rgbLed.flash(RGBLed::RED, 20);
     // esp_sleep_enable_timer_wakeup(TIME_TO_SLEEP * uS_TO_S_FACTOR);
-    touchAttachInterrupt(T3, callback, 80);
+    touchAttachInterrupt(T3, callback, TOUCH_THRESHOLD);
     esp_sleep_enable_touchpad_wakeup();
     delay(1000);
     esp_deep_sleep_start();
