@@ -5,10 +5,10 @@
 #include <RGBLed.h>
 #include <arduino-timer.h>
 
-#define PIN_LED LED_BUILTIN
+#define PIN_LED (2)
 #define PIN_KEY (4)
-#define PIN_ROTARY_LEFT (22)
-#define PIN_ROTARY_RIGHT (23)
+#define PIN_ROTARY_LEFT (23)
+#define PIN_ROTARY_RIGHT (22)
 #define PIN_RED (26)
 #define PIN_GREEN (27)
 #define PIN_BLUE (25)
@@ -16,8 +16,8 @@
 
 #define uS_TO_S_FACTOR 1000000
 #define mS_TO_S_FACTOR 1000
-#define IDLE_TIME 30
-#define TOUCH_THRESHOLD 80
+#define IDLE_TIME 60
+#define TOUCH_THRESHOLD 70
 
 AiEsp32RotaryEncoder rotary = AiEsp32RotaryEncoder(PIN_ROTARY_LEFT, PIN_ROTARY_RIGHT);
 BleMouse bleMouse;
@@ -117,10 +117,16 @@ void loop()
     // esp_sleep_enable_timer_wakeup(TIME_TO_SLEEP * uS_TO_S_FACTOR);
     touchAttachInterrupt(T3, callback, TOUCH_THRESHOLD);
     esp_sleep_enable_touchpad_wakeup();
+    digitalWrite(PIN_LED, LOW);
     delay(1000);
     esp_deep_sleep_start();
     return;
   }
+
+  digitalWrite(PIN_LED, LOW);
+  delay(100);
+  digitalWrite(PIN_LED, HIGH);
+  delay(100);
 
   scrollToggler.loop();
   focusButton.loop();
