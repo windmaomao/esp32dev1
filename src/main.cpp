@@ -16,7 +16,7 @@
 
 #define uS_TO_S_FACTOR 1000000
 #define mS_TO_S_FACTOR 1000
-#define TIME_TO_SLEEP 10
+#define IDLE_TIME 30
 #define TOUCH_THRESHOLD 80
 
 AiEsp32RotaryEncoder rotary = AiEsp32RotaryEncoder(PIN_ROTARY_LEFT, PIN_ROTARY_RIGHT);
@@ -110,7 +110,7 @@ void loop()
   if (!checkBleStatus())
     return;
 
-  if (millis() - lastActivity > TIME_TO_SLEEP * mS_TO_S_FACTOR)
+  if (millis() - lastActivity > IDLE_TIME * mS_TO_S_FACTOR)
   {
     Serial.println("Idle and sleep");
     rgbLed.flash(RGBLed::RED, 20);
