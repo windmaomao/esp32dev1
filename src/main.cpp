@@ -87,12 +87,31 @@ bool onIdle(void *argument)
   return false;
 }
 
+void heartBeat()
+{
+  if (idleTask != nullptr)
+  {
+    timer.cancel(idleTask);
+  }
+
+  idleTask = timer.in(IDLE_TIME * mS_TO_S_FACTOR, &onIdle);
+}
+
+bool flashHeartBeat(void *arguments)
+{
+  digitalWrite(PIN_LED, HIGH);
+  timer.in(500, [](void *arguments)
+           { digitalWrite(PIN_LED, LOW); return false; });
+  return true;
+}
+
 void setup()
 {
   Serial.begin(9600);
   Serial.println("Start");
 
   pinMode(PIN_LED, OUTPUT);
+  timer.every(1000, &flashHeartBeat);
 
   pinMode(PIN_ROTARY_LEFT, INPUT_PULLUP);
   pinMode(PIN_ROTARY_RIGHT, INPUT_PULLUP);
@@ -112,6 +131,8 @@ void setup()
   focusButton.begin(PIN_KEY2);
   focusButton.setClickHandler([](Button2 &btn)
                               { bleMouse.click(MOUSE_LEFT); });
+
+  heartBeat();
 }
 
 void loop()
@@ -121,11 +142,6 @@ void loop()
   if (!checkBleStatus())
     return;
 
-  digitalWrite(PIN_LED, LOW);
-  delay(100);
-  digitalWrite(PIN_LED, HIGH);
-  delay(100);
-
   scrollToggler.loop();
   focusButton.loop();
 
@@ -133,7 +149,6 @@ void loop()
   if (res != 0)
   {
     bleMouse.move(0, 0, res);
-    timer.cancel(idleTask);
-    idleTask = timer.in(IDLE_TIME * mS_TO_S_FACTOR, &onIdle);
+    heartBeat();
   }
 }
