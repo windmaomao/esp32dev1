@@ -16,7 +16,7 @@
 
 #define uS_TO_S_FACTOR 1000000
 #define mS_TO_S_FACTOR 1000
-#define IDLE_TIME 60
+#define IDLE_TIME 10
 #define TOUCH_THRESHOLD 70
 
 AiEsp32RotaryEncoder rotary = AiEsp32RotaryEncoder(PIN_ROTARY_LEFT, PIN_ROTARY_RIGHT);
@@ -27,7 +27,7 @@ volatile bool scrollOn = false;
 Button2 focusButton;
 Timer<10> timer;
 bool bluetoothOn = true;
-unsigned long lastActivity = 0;
+Timer<>::Task idleTask;
 
 bool onScrolling(void *arguments)
 {
@@ -75,6 +75,18 @@ void callback()
   // placeholder callback function
 }
 
+bool onIdle(void *argument)
+{
+  Serial.println("Idle");
+  rgbLed.flash(RGBLed::RED, 20);
+  // esp_sleep_enable_timer_wakeup(TIME_TO_SLEEP * uS_TO_S_FACTOR);
+  touchAttachInterrupt(T3, callback, TOUCH_THRESHOLD);
+  esp_sleep_enable_touchpad_wakeup();
+  delay(1000);
+  esp_deep_sleep_start();
+  return false;
+}
+
 void setup()
 {
   Serial.begin(9600);
@@ -100,28 +112,14 @@ void setup()
   focusButton.begin(PIN_KEY2);
   focusButton.setClickHandler([](Button2 &btn)
                               { bleMouse.click(MOUSE_LEFT); });
-
-  lastActivity = millis();
 }
 
 void loop()
 {
   timer.tick();
+
   if (!checkBleStatus())
     return;
-
-  if (millis() - lastActivity > IDLE_TIME * mS_TO_S_FACTOR)
-  {
-    Serial.println("Idle and sleep");
-    rgbLed.flash(RGBLed::RED, 20);
-    // esp_sleep_enable_timer_wakeup(TIME_TO_SLEEP * uS_TO_S_FACTOR);
-    touchAttachInterrupt(T3, callback, TOUCH_THRESHOLD);
-    esp_sleep_enable_touchpad_wakeup();
-    digitalWrite(PIN_LED, LOW);
-    delay(1000);
-    esp_deep_sleep_start();
-    return;
-  }
 
   digitalWrite(PIN_LED, LOW);
   delay(100);
@@ -135,6 +133,7 @@ void loop()
   if (res != 0)
   {
     bleMouse.move(0, 0, res);
-    lastActivity = millis();
+    timer.cancel(idleTask);
+    idleTask = timer.in(IDLE_TIME * mS_TO_S_FACTOR, &onIdle);
   }
 }
