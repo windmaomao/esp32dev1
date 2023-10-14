@@ -9,6 +9,7 @@
 #define PIN_KEY (4)
 #define PIN_ROTARY_LEFT (23)
 #define PIN_ROTARY_RIGHT (22)
+#define PIN_TOUCH (32)
 #define PIN_RED (26)
 #define PIN_GREEN (27)
 #define PIN_BLUE (25)
@@ -17,7 +18,6 @@
 #define uS_TO_S_FACTOR 1000000
 #define mS_TO_S_FACTOR 1000
 #define IDLE_TIME 10
-#define TOUCH_THRESHOLD 70
 
 AiEsp32RotaryEncoder rotary = AiEsp32RotaryEncoder(PIN_ROTARY_LEFT, PIN_ROTARY_RIGHT);
 BleMouse bleMouse;
@@ -70,18 +70,11 @@ bool checkBleStatus()
   return bluetoothOn;
 }
 
-void callback()
-{
-  // placeholder callback function
-}
-
 bool onIdle(void *argument)
 {
   Serial.println("Idle");
   rgbLed.flash(RGBLed::RED, 20);
-  // esp_sleep_enable_timer_wakeup(TIME_TO_SLEEP * uS_TO_S_FACTOR);
-  touchAttachInterrupt(T3, callback, TOUCH_THRESHOLD);
-  esp_sleep_enable_touchpad_wakeup();
+  esp_sleep_enable_ext0_wakeup(GPIO_NUM_32, HIGH);
   delay(1000);
   esp_deep_sleep_start();
   return false;
@@ -112,6 +105,7 @@ void setup()
 
   pinMode(PIN_LED, OUTPUT);
   timer.every(1000, &flashHeartBeat);
+  pinMode(PIN_TOUCH, INPUT);
 
   pinMode(PIN_ROTARY_LEFT, INPUT_PULLUP);
   pinMode(PIN_ROTARY_RIGHT, INPUT_PULLUP);
@@ -138,6 +132,11 @@ void setup()
 void loop()
 {
   timer.tick();
+
+  if (digitalRead(PIN_TOUCH) == 1)
+  {
+    heartBeat();
+  }
 
   if (!checkBleStatus())
     return;
