@@ -17,7 +17,7 @@
 
 #define uS_TO_S_FACTOR 1000000
 #define mS_TO_S_FACTOR 1000
-#define IDLE_TIME 10
+#define IDLE_TIME 20
 
 AiEsp32RotaryEncoder rotary = AiEsp32RotaryEncoder(PIN_ROTARY_LEFT, PIN_ROTARY_RIGHT);
 BleMouse bleMouse;
@@ -98,6 +98,11 @@ bool flashHeartBeat(void *arguments)
   return true;
 }
 
+bool touched()
+{
+  return digitalRead(PIN_TOUCH) == 1;
+}
+
 void setup()
 {
   Serial.begin(9600);
@@ -133,7 +138,7 @@ void loop()
 {
   timer.tick();
 
-  if (digitalRead(PIN_TOUCH) == 1)
+  if (touched())
   {
     heartBeat();
   }
