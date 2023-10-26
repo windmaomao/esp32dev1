@@ -103,6 +103,11 @@ bool touched()
   return digitalRead(PIN_TOUCH) == 1;
 }
 
+byte myButtonStateHandler()
+{
+  return digitalRead(PIN_TOUCH);
+}
+
 void setup()
 {
   Serial.begin(9600);
@@ -127,9 +132,10 @@ void setup()
   scrollToggler.begin(PIN_KEY);
   scrollToggler.setClickHandler(&onScrollToggle);
 
-  focusButton.begin(PIN_KEY2);
-  focusButton.setClickHandler([](Button2 &btn)
-                              { bleMouse.click(MOUSE_LEFT); });
+  focusButton.setButtonStateFunction(myButtonStateHandler);
+  focusButton.setTapHandler([](Button2 &btn)
+                            { bleMouse.click(MOUSE_BACK); });
+  focusButton.begin(VIRTUAL_PIN);
 
   heartBeat();
 }
