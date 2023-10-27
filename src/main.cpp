@@ -6,7 +6,7 @@
 #include <arduino-timer.h>
 
 #define PIN_LED (2)
-#define PIN_KEY (4)
+#define PIN_ROTARY_KEY (4)
 #define PIN_ROTARY_LEFT (23)
 #define PIN_ROTARY_RIGHT (22)
 #define PIN_TOUCH (32)
@@ -28,26 +28,6 @@ Button2 focusButton;
 Timer<10> timer;
 bool bluetoothOn = true;
 Timer<>::Task idleTask;
-
-bool onScrolling(void *arguments)
-{
-  bleMouse.move(0, 0, 1);
-  return scrollOn;
-}
-
-void onScrollToggle(Button2 &btn)
-{
-  scrollOn = !scrollOn;
-  if (scrollOn)
-  {
-    rgbLed.flash(RGBLed::GREEN, 20);
-    timer.every(500, &onScrolling);
-  }
-  else
-  {
-    rgbLed.flash(RGBLed::RED, 20);
-  }
-}
 
 bool onDisconnecting(void *arguments)
 {
@@ -74,7 +54,7 @@ bool onIdle(void *argument)
 {
   Serial.println("Idle");
   rgbLed.flash(RGBLed::RED, 20);
-  esp_sleep_enable_ext0_wakeup(GPIO_NUM_32, HIGH);
+  esp_sleep_enable_ext0_wakeup((gpio_num_t)PIN_ROTARY_KEY, LOW);
   delay(1000);
   esp_deep_sleep_start();
   return false;
@@ -117,6 +97,7 @@ void setup()
   timer.every(1000, &flashHeartBeat);
   pinMode(PIN_TOUCH, INPUT);
 
+  pinMode(PIN_ROTARY_KEY, INPUT_PULLUP);
   pinMode(PIN_ROTARY_LEFT, INPUT_PULLUP);
   pinMode(PIN_ROTARY_RIGHT, INPUT_PULLUP);
   rotary.begin();
@@ -128,9 +109,6 @@ void setup()
   bleMouse.begin();
 
   rgbLed.off();
-
-  scrollToggler.begin(PIN_KEY);
-  scrollToggler.setClickHandler(&onScrollToggle);
 
   focusButton.setButtonStateFunction(myButtonStateHandler);
   focusButton.setTapHandler([](Button2 &btn)
