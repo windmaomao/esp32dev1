@@ -6,9 +6,9 @@
 #include <arduino-timer.h>
 
 #define PIN_LED (2)
-#define PIN_ROTARY_KEY (4)
-#define PIN_ROTARY_LEFT (23)
-#define PIN_ROTARY_RIGHT (22)
+// #define PIN_ROTARY_KEY (4)
+#define PIN_ROTARY_LEFT (4)
+#define PIN_ROTARY_RIGHT (15)
 #define PIN_TOUCH (32)
 #define PIN_RED (26)
 #define PIN_GREEN (27)
@@ -54,7 +54,7 @@ bool onIdle(void *argument)
 {
   Serial.println("Idle");
   rgbLed.flash(RGBLed::RED, 20);
-  esp_sleep_enable_ext0_wakeup((gpio_num_t)PIN_ROTARY_KEY, LOW);
+  esp_sleep_enable_ext0_wakeup((gpio_num_t)PIN_ROTARY_LEFT, LOW);
   delay(1000);
   esp_deep_sleep_start();
   return false;
@@ -97,7 +97,7 @@ void setup()
   timer.every(1000, &flashHeartBeat);
   pinMode(PIN_TOUCH, INPUT);
 
-  pinMode(PIN_ROTARY_KEY, INPUT_PULLUP);
+  // pinMode(PIN_ROTARY_KEY, INPUT_PULLUP);
   pinMode(PIN_ROTARY_LEFT, INPUT_PULLUP);
   pinMode(PIN_ROTARY_RIGHT, INPUT_PULLUP);
   rotary.begin();
