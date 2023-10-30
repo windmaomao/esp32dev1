@@ -18,6 +18,7 @@
 #define uS_TO_S_FACTOR 1000000
 #define mS_TO_S_FACTOR 1000
 #define IDLE_TIME 20
+#define CLICK_TYPE MOUSE_LEFT
 
 AiEsp32RotaryEncoder rotary = AiEsp32RotaryEncoder(PIN_ROTARY_LEFT, PIN_ROTARY_RIGHT);
 BleMouse bleMouse;
@@ -112,7 +113,7 @@ void setup()
 
   focusButton.setButtonStateFunction(myButtonStateHandler);
   focusButton.setTapHandler([](Button2 &btn)
-                            { bleMouse.click(MOUSE_BACK); });
+                            { bleMouse.click(CLICK_TYPE); heartBeat(); });
   focusButton.begin(VIRTUAL_PIN);
 
   heartBeat();
@@ -121,11 +122,6 @@ void setup()
 void loop()
 {
   timer.tick();
-
-  if (touched())
-  {
-    heartBeat();
-  }
 
   if (!checkBleStatus())
     return;
